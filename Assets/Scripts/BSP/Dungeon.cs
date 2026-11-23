@@ -1,22 +1,26 @@
 using NUnit.Framework;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public class Dungeon : MonoBehaviour
 {
-    private Node _root;
-    private List<RectInt> _rooms;
-    private List<Vector2Int> _corridors;
-    [SerializeField] int _minRoomSize;
-    [SerializeField] int _dungeonWidth;
-    [SerializeField] int _dungeonHeight;
+    public Node root;
+
+    public Tilemap Tilemap;
+    public TileBase FloorTile;
+    public TileBase WallTile;
+
+    [SerializeField] int _minRoomSize = 10;
+    public int dungeonWidth;
+    public int dungeonHeight;
     [SerializeField] DungeonGenerator _generator;
 
     public Node BSPGenerator(RectInt size)
     {
-        _root = new Node(size);
-        SplitNode(_root);
-        return _root;
+        Node root = new Node(size);
+        SplitNode(root);
+        return root;
     }
 
     private void SplitNode(Node node)
@@ -58,10 +62,10 @@ public class Dungeon : MonoBehaviour
 
         if (node.Left == null && node.right == null)
         {
-            int roomWidth = Random.Range(_minRoomSize / 2, node.rect.width - 1);
-            int roomHeight = Random.Range(_minRoomSize / 2, node.rect.height - 1);
-            int roomX = Random.Range(node.rect.x, node.rect.x + node.rect.width - roomWidth);
-            int roomY = Random.Range(node.rect.y, node.rect.y + node.rect.height - roomHeight);
+            int roomWidth = node.rect.width - 4;
+            int roomHeight = node.rect.height - 4;
+            int roomX = node.rect.x + node.rect.width - roomWidth;
+            int roomY = node.rect.y + node.rect.height - roomHeight;
 
             RectInt room = new RectInt(roomX, roomY, roomWidth, roomHeight);
             rooms.Add(room);
@@ -98,21 +102,46 @@ public class Dungeon : MonoBehaviour
             corridor.Add(new Vector2Int(x, start.y));
         }
 
-        for (int y = start.y; y != end.y; y+= (start.y < end.y) ? 1 : -1)
+        for (int y = start.y; y != end.y; y += (start.y < end.y) ? 1 : -1)
         {
             corridor.Add(new Vector2Int(end.x, y));
         }
         return corridor;
     }
 
-    private void Start()
+    public void DrawDungeon(List<RectInt> rooms, List<Vector2Int> corridors)
     {
-        RectInt size = new RectInt(0, 1000, _dungeonWidth, _dungeonHeight);
-        _root = BSPGenerator(size);
-        _rooms = GenerateRooms(_root);
-        _corridors = GenerateCorridors(_rooms);
+        BoundsInt bounds = Tilemap.cellBounds;
+        bounds.yMax = root.rect.yMax + 10;
+        bounds.xMax = root.rect.xMax+ 10;
+        Tilemap.ClearAllTiles();
 
-        _generator.DrawDungeon(_rooms, _corridors);
+        foreach (var room in rooms)
+        {
+            for (int x = room.xMin; x < room.xMax; x++)
+            {
+                for (int y = room.yMin; y < room.yMax; y++)
+                {
+                    Tilemap.SetTile(new Vector3Int(x, y, 0), FloorTile);
+                }
+            }
+        }
+
+        foreach (var corridorPosition in corridors)
+        {
+            Tilemap.SetTile(new Vector3Int(corridorPosition.x, corridorPosition.y, 0), FloorTile);
+        }
+
+        for (int x = bounds.xMin; x < bounds.xMax; x++)
+        {
+            for (int y = bounds.yMin; y < bounds.yMax; y++)
+            {
+                if (Tilemap.GetTile(new Vector3Int(x, y, 0)) == null)
+                {
+                    Tilemap.SetTile(new Vector3Int(x, y, 0), WallTile);
+                }
+            }
+        }
     }
 
 }

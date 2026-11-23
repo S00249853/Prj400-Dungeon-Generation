@@ -6,6 +6,7 @@ using UnityEngine.Tilemaps;
 public class BSPGenerator : MonoBehaviour
 {
     public int minRoomSize = 10;
+    public BSPNode root;
 
     public BSPNode GenerateBSP(RectInt space)
     {
@@ -108,6 +109,8 @@ public class BSPGenerator : MonoBehaviour
     public void DrawDungeon(List<RectInt> rooms, List<Vector2Int> corridors)
     {
         BoundsInt bounds = tilemap.cellBounds;
+        bounds.yMax = root.rect.yMax;
+        bounds.xMax = root.rect.xMax; 
         tilemap.ClearAllTiles();
 
         // Draw Rooms

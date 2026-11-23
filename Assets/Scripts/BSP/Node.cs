@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Node : MonoBehaviour
+public class Node 
 {
     public RectInt rect;
     public Node Left;
