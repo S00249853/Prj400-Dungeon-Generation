@@ -595,12 +595,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Dungeon
   Tilemap: {fileID: 514300411}
-  FloorTile: {fileID: 11400000, guid: 7754e11bac37cec4687e8b97be2be0e8, type: 2}
+  FloorTiles:
+  - {fileID: 11400000, guid: 36818461f2f92cc4bb7e3d727a7fb05c, type: 2}
+  - {fileID: 11400000, guid: 7754e11bac37cec4687e8b97be2be0e8, type: 2}
+  - {fileID: 11400000, guid: cd689abd5111d4248bdef924201f6738, type: 2}
+  - {fileID: 11400000, guid: 04edafb0e05b3e143a0f907f15d74232, type: 2}
+  - {fileID: 11400000, guid: a02111e891491614594fa508cb871829, type: 2}
   WallTile: {fileID: 11400000, guid: 3d1a80e666f6a934890f10d85e225468, type: 2}
-  _minRoomSize: 10
-  dungeonWidth: 50
-  dungeonHeight: 50
-  _generator: {fileID: 670504729}
+  _minRoomSize: 60
+  dungeonWidth: 300
+  dungeonHeight: 300
+  maxNoOfRooms: 15
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

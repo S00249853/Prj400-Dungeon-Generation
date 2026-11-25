@@ -9,7 +9,7 @@ public class DungeonGenerator : MonoBehaviour
     private void Start()
     {
         dungeon.root = dungeon.BSPGenerator(new RectInt(new Vector2Int(0, 0), new Vector2Int(dungeon.dungeonWidth, dungeon.dungeonHeight)));
-        List<RectInt> rooms = dungeon.GenerateRooms(dungeon.root);
+        List<Room> rooms = dungeon.GenerateRooms(dungeon.root);
         List<Vector2Int> corridors = dungeon.GenerateCorridors(rooms);
         dungeon.DrawDungeon(rooms, corridors);
     }

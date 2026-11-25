@@ -8,13 +8,19 @@ public class Dungeon : MonoBehaviour
     public Node root;
 
     public Tilemap Tilemap;
-    public TileBase FloorTile;
+    public TileBase[] FloorTiles = new TileBase[5];
     public TileBase WallTile;
 
-    [SerializeField] int _minRoomSize = 10;
+    List<RectInt> nodes = new List<RectInt>();
+
+    [SerializeField] int _minRoomSize = 30;
     public int dungeonWidth;
     public int dungeonHeight;
-    [SerializeField] DungeonGenerator _generator;
+
+    public int maxNoOfRooms;
+    int _noOfRooms;
+
+    bool splitH = false;
 
     public Node BSPGenerator(RectInt size)
     {
@@ -25,12 +31,24 @@ public class Dungeon : MonoBehaviour
 
     private void SplitNode(Node node)
     {
-        if (node.rect.width < _minRoomSize || node.rect.height < _minRoomSize)
+        _noOfRooms++;
+        if (node.rect.width <= _minRoomSize || node.rect.height <= _minRoomSize)
         {
+            nodes.Add(node.rect);
             return;
         }
-
-        bool splitH = Random.Range(0f, 1f) > 0.5f;
+        else if (node.rect.width < _minRoomSize && node.rect.height! < _minRoomSize)
+        {
+            splitH = true;
+        }
+        else if (node.rect.width! < _minRoomSize && node.rect.height < _minRoomSize)
+        {
+            splitH = false;
+        }
+        else
+        {
+            splitH = !splitH;
+        }
         int splitPoint = splitH ? Random.Range(_minRoomSize, node.rect.width - _minRoomSize) : Random.Range(_minRoomSize, node.rect.height - _minRoomSize);
 
         if (splitH)
@@ -49,25 +67,25 @@ public class Dungeon : MonoBehaviour
         SplitNode(node.right);
     }
 
-    public List<RectInt> GenerateRooms(Node node)
+    public List<Room> GenerateRooms(Node node)
     {
-        List<RectInt> rooms = new List<RectInt>();
+        List<Room> rooms = new List<Room>();
         TraverseAndCreateRooms(node, rooms);
         return rooms;
     }
 
-    private void TraverseAndCreateRooms(Node node, List<RectInt> rooms)
+    private void TraverseAndCreateRooms(Node node, List<Room> rooms)
     {
         if (node == null) return;
 
         if (node.Left == null && node.right == null)
         {
-            int roomWidth = node.rect.width - 4;
-            int roomHeight = node.rect.height - 4;
-            int roomX = node.rect.x + node.rect.width - roomWidth;
-            int roomY = node.rect.y + node.rect.height - roomHeight;
+            int roomWidth = node.rect.width - 10;
+            int roomHeight = node.rect.height - 10;
+            int roomX = node.rect.x;
+            int roomY = node.rect.y;
 
-            RectInt room = new RectInt(roomX, roomY, roomWidth, roomHeight);
+            Room room = new Room(roomX, roomY, roomWidth, roomHeight);
             rooms.Add(room);
         }
         else
@@ -77,13 +95,13 @@ public class Dungeon : MonoBehaviour
         }
     }
 
-    public List<Vector2Int> GenerateCorridors(List<RectInt> rooms)
+    public List<Vector2Int> GenerateCorridors(List<Room> rooms)
     {
         List<Vector2Int> corridors = new List<Vector2Int>();
         for (int i = 0; i < rooms.Count - 1; i++)
         {
-            Vector2Int room1Center = new Vector2Int(rooms[i].xMin + rooms[i].width / 2, rooms[i].yMin + rooms[i].height / 2);
-            Vector2Int room2Center = new Vector2Int(rooms[i + 1].xMin + rooms[i + 1].width / 2, rooms[i + 1].yMin + rooms[i + 1].height / 2);
+            Vector2Int room1Center = new Vector2Int(rooms[i].dimensions.xMin + rooms[i].dimensions.width / 2, rooms[i].dimensions.yMin + rooms[i].dimensions.height / 2);
+            Vector2Int room2Center = new Vector2Int(rooms[i + 1].dimensions.xMin + rooms[i + 1].dimensions.width / 2, rooms[i + 1].dimensions.yMin + rooms[i + 1].dimensions.height / 2);
       
             foreach(var pos in CreateLShapedCorridor(room1Center, room2Center))
             {
@@ -109,39 +127,48 @@ public class Dungeon : MonoBehaviour
         return corridor;
     }
 
-    public void DrawDungeon(List<RectInt> rooms, List<Vector2Int> corridors)
+    private void OnDrawGizmos()
+    {
+        foreach (RectInt node in nodes)
+        {
+            Gizmos.DrawWireCube(new Vector3(node.center.x, node.center.y), new Vector3(node.size.x, node.size.y));
+        }
+    }
+
+    public void DrawDungeon(List<Room> rooms, List<Vector2Int> corridors)
     {
         BoundsInt bounds = Tilemap.cellBounds;
         bounds.yMax = root.rect.yMax + 10;
         bounds.xMax = root.rect.xMax+ 10;
         Tilemap.ClearAllTiles();
 
-        foreach (var room in rooms)
+        foreach (Room room in rooms)
         {
-            for (int x = room.xMin; x < room.xMax; x++)
+            for (int x = room.dimensions.xMin; x < room.dimensions.xMax; x++)
             {
-                for (int y = room.yMin; y < room.yMax; y++)
+                for (int y = room.dimensions.yMin; y < room.dimensions.yMax; y++)
                 {
-                    Tilemap.SetTile(new Vector3Int(x, y, 0), FloorTile);
+                    Tilemap.SetTile(new Vector3Int(x, y, 0), FloorTiles[(int)room.type]);
                 }
             }
         }
 
         foreach (var corridorPosition in corridors)
         {
-            Tilemap.SetTile(new Vector3Int(corridorPosition.x, corridorPosition.y, 0), FloorTile);
+            if (Tilemap.GetTile(new Vector3Int(corridorPosition.x,corridorPosition.y, 0)) == null)
+            Tilemap.SetTile(new Vector3Int(corridorPosition.x, corridorPosition.y, 0), FloorTiles[1]);
         }
 
-        for (int x = bounds.xMin; x < bounds.xMax; x++)
-        {
-            for (int y = bounds.yMin; y < bounds.yMax; y++)
-            {
-                if (Tilemap.GetTile(new Vector3Int(x, y, 0)) == null)
-                {
-                    Tilemap.SetTile(new Vector3Int(x, y, 0), WallTile);
-                }
-            }
-        }
+        //for (int x = bounds.xMin; x < bounds.xMax; x++)
+        //{
+        //    for (int y = bounds.yMin; y < bounds.yMax; y++)
+        //    {
+        //        if (Tilemap.GetTile(new Vector3Int(x, y, 0)) == null)
+        //        {
+        //            Tilemap.SetTile(new Vector3Int(x, y, 0), WallTile);
+        //        }
+        //    }
+        //}
     }
 
 }
