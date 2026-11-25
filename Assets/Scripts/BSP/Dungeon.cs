@@ -24,14 +24,12 @@ public class Dungeon : MonoBehaviour
     public GameObject[] enemyPrefabs;
     public GameObject[] treasurePrefabs;
     public GameObject[] bossPrefabs;
-    public GameObject[] exitPrefabs;
 
     Dictionary<RoomType, GameObject[]> roomFiller;
 
     bool splitH = false;
     bool treasureSpawned = false;
     bool bossSpawned = false;
-    bool exitSpawned = false;
 
     public Node BSPGenerator(RectInt size)
     {
@@ -84,8 +82,7 @@ public class Dungeon : MonoBehaviour
             {RoomType.Basic, basicPrefabs},
             {RoomType.Enemies, enemyPrefabs },
             {RoomType.Treasure, treasurePrefabs },
-            {RoomType.Boss, bossPrefabs },
-            {RoomType.Exit, exitPrefabs } };
+            {RoomType.Boss, bossPrefabs } };
         List<Room> rooms = new List<Room>();
         TraverseAndCreateRooms(node, rooms);
         return rooms;
@@ -103,8 +100,16 @@ public class Dungeon : MonoBehaviour
             int roomY = node.rect.y;
             if (roomWidth > 6 && roomHeight > 6)
             {
-                RoomType type = (RoomType)Random.Range(0, 4);
-                Room room = new Room(roomX, roomY, roomWidth, roomHeight, type, roomFiller[type]);
+                RoomType type = (RoomType)Random.Range(0, 3);
+                if (type == RoomType.Treasure && treasureSpawned == true)
+                { 
+                type = (RoomType)Random.Range(0, 2);
+                }
+                else if (type == RoomType.Treasure)
+                {
+                    treasureSpawned = true;
+                }
+                    Room room = new Room(roomX, roomY, roomWidth, roomHeight, type, roomFiller[type]);
                 rooms.Add(room);
             }
          else
@@ -117,6 +122,30 @@ public class Dungeon : MonoBehaviour
             TraverseAndCreateRooms(node.Left, rooms);
             TraverseAndCreateRooms(node.right, rooms);
         }
+    }
+
+    public List<Room> SetStartAndExit(List<Room> rooms)
+    {
+        for (int i = 0; i < rooms.Count; i++)
+        {
+            if (i == 0)
+            {
+                rooms[i].type = RoomType.Basic;
+                rooms[i].items = roomFiller[RoomType.Basic];
+            }
+            else if (i + 1 == rooms.Count)
+            {
+                rooms[i].type = RoomType.Boss;
+                rooms[i].items = roomFiller[RoomType.Boss];
+            }
+
+            else if (i == rooms.Count - 1 && treasureSpawned == false)
+            {
+                rooms[i].type = RoomType.Treasure;
+                rooms[i].items = roomFiller[RoomType.Treasure];
+            }
+        }
+        return rooms;
     }
 
     public List<Vector2Int> GenerateCorridors(List<Room> rooms)
@@ -172,7 +201,7 @@ public class Dungeon : MonoBehaviour
             {
                 for (int y = room.dimensions.yMin; y < room.dimensions.yMax; y++)
                 {
-                    Tilemap.SetTile(new Vector3Int(x, y, 0), FloorTiles[(int)room.type + 1]);  
+                    Tilemap.SetTile(new Vector3Int(x, y, 0), FloorTiles[(int)room.type]);  
                 }
             }
             room.FillRoom();

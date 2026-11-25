@@ -6,8 +6,7 @@ public enum RoomType
     Basic,
     Enemies,
     Treasure,
-    Boss,
-    Exit
+    Boss
 }
 public class Room : MonoBehaviour
 {
@@ -25,7 +24,7 @@ public class Room : MonoBehaviour
     {
         foreach (GameObject item in items)
         {
-            Vector3 pos = new Vector3(Random.Range(dimensions.xMin, dimensions.xMax), Random.Range(dimensions.xMin + .5f, dimensions.xMax - .5f));
+            Vector3 pos = new Vector3(Random.Range(dimensions.xMin, dimensions.xMax), Random.Range(dimensions.yMin, dimensions.yMax));
             Instantiate(item, pos, item.transform.rotation);
         }
     }
