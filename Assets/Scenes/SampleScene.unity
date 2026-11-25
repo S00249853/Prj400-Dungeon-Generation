@@ -606,6 +606,22 @@ MonoBehaviour:
   dungeonWidth: 300
   dungeonHeight: 300
   maxNoOfRooms: 15
+  basicPrefabs:
+  - {fileID: 5190517463750355893, guid: 850e7ce1722a9ed41b07f465a6ad1f06, type: 3}
+  - {fileID: 6998332141119020961, guid: 9b686241f55080345a2fad6c1ee2e7cb, type: 3}
+  - {fileID: 6998332141119020961, guid: 9b686241f55080345a2fad6c1ee2e7cb, type: 3}
+  enemyPrefabs:
+  - {fileID: 1190400377543219416, guid: a33371f91efa2894ebe53559f3bb689c, type: 3}
+  - {fileID: 1190400377543219416, guid: a33371f91efa2894ebe53559f3bb689c, type: 3}
+  - {fileID: 1190400377543219416, guid: a33371f91efa2894ebe53559f3bb689c, type: 3}
+  treasurePrefabs:
+  - {fileID: 6647461776566748791, guid: fc2ebf68fb833eb48bad12481729ccd6, type: 3}
+  - {fileID: 6647461776566748791, guid: fc2ebf68fb833eb48bad12481729ccd6, type: 3}
+  - {fileID: 6647461776566748791, guid: fc2ebf68fb833eb48bad12481729ccd6, type: 3}
+  bossPrefabs:
+  - {fileID: 5069230310735773510, guid: c6e5a5a4695732444b20b8dce8ff7fcb, type: 3}
+  exitPrefabs:
+  - {fileID: 5919199994734564778, guid: fe12aa4ee1a249a498866e5ae28b4924, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

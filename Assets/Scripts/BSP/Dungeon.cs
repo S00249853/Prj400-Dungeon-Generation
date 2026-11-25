@@ -20,7 +20,18 @@ public class Dungeon : MonoBehaviour
     public int maxNoOfRooms;
     int _noOfRooms;
 
+    public GameObject[] basicPrefabs;
+    public GameObject[] enemyPrefabs;
+    public GameObject[] treasurePrefabs;
+    public GameObject[] bossPrefabs;
+    public GameObject[] exitPrefabs;
+
+    Dictionary<RoomType, GameObject[]> roomFiller;
+
     bool splitH = false;
+    bool treasureSpawned = false;
+    bool bossSpawned = false;
+    bool exitSpawned = false;
 
     public Node BSPGenerator(RectInt size)
     {
@@ -37,11 +48,11 @@ public class Dungeon : MonoBehaviour
             nodes.Add(node.rect);
             return;
         }
-        else if (node.rect.width < _minRoomSize && node.rect.height! < _minRoomSize)
+        else if (node.rect.width < _minRoomSize && node.rect.height !< _minRoomSize)
         {
             splitH = true;
         }
-        else if (node.rect.width! < _minRoomSize && node.rect.height < _minRoomSize)
+        else if (node.rect.width !< _minRoomSize && node.rect.height < _minRoomSize)
         {
             splitH = false;
         }
@@ -69,6 +80,12 @@ public class Dungeon : MonoBehaviour
 
     public List<Room> GenerateRooms(Node node)
     {
+        roomFiller = new Dictionary<RoomType, GameObject[]>() {
+            {RoomType.Basic, basicPrefabs},
+            {RoomType.Enemies, enemyPrefabs },
+            {RoomType.Treasure, treasurePrefabs },
+            {RoomType.Boss, bossPrefabs },
+            {RoomType.Exit, exitPrefabs } };
         List<Room> rooms = new List<Room>();
         TraverseAndCreateRooms(node, rooms);
         return rooms;
@@ -84,9 +101,16 @@ public class Dungeon : MonoBehaviour
             int roomHeight = node.rect.height - 10;
             int roomX = node.rect.x;
             int roomY = node.rect.y;
-
-            Room room = new Room(roomX, roomY, roomWidth, roomHeight);
-            rooms.Add(room);
+            if (roomWidth > 6 && roomHeight > 6)
+            {
+                RoomType type = (RoomType)Random.Range(0, 4);
+                Room room = new Room(roomX, roomY, roomWidth, roomHeight, type, roomFiller[type]);
+                rooms.Add(room);
+            }
+         else
+            {
+                return;
+            }
         }
         else
         {
@@ -148,9 +172,10 @@ public class Dungeon : MonoBehaviour
             {
                 for (int y = room.dimensions.yMin; y < room.dimensions.yMax; y++)
                 {
-                    Tilemap.SetTile(new Vector3Int(x, y, 0), FloorTiles[(int)room.type]);
+                    Tilemap.SetTile(new Vector3Int(x, y, 0), FloorTiles[(int)room.type + 1]);  
                 }
             }
+            room.FillRoom();
         }
 
         foreach (var corridorPosition in corridors)
